@@ -1,8 +1,11 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { Turnstile, type TurnstileHandle } from '../components/Turnstile'
 import { CONTACT_TOPICS } from '../lib/contactTopics'
 
-type Status = 'idle' | 'sending' | 'done' | 'error'
+const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
+
+type Status = 'idle' | 'sending' | 'done' | 'error' | 'limited'
 
 export function ContactPage() {
   const [params] = useSearchParams()
@@ -11,21 +14,29 @@ export function ContactPage() {
     ? (requested as string)
     : ''
   const [status, setStatus] = useState<Status>('idle')
+  const [token, setToken] = useState<string | null>(null)
+  const turnstile = useRef<TurnstileHandle>(null)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (!token) return
     setStatus('sending')
-    const data = Object.fromEntries(new FormData(event.currentTarget))
+    const data = {
+      ...Object.fromEntries(new FormData(event.currentTarget)),
+      turnstileToken: token,
+    }
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      setStatus(res.ok ? 'done' : 'error')
+      setStatus(res.ok ? 'done' : res.status === 429 ? 'limited' : 'error')
     } catch {
       setStatus('error')
     }
+    // トークンは使い切りなので、結果に関わらず取り直して再試行できるようにする
+    turnstile.current?.reset()
   }
 
   if (status === 'done') {
@@ -80,9 +91,25 @@ export function ContactPage() {
           autoComplete="off"
           aria-hidden="true"
         />
-        <button className="btn btn-primary" type="submit" disabled={status === 'sending'}>
+        {SITE_KEY ? (
+          <Turnstile ref={turnstile} siteKey={SITE_KEY} onToken={setToken} />
+        ) : (
+          <p className="contact-error" role="alert">
+            スパム対策の設定が未完了のため、現在フォームは利用できません。
+          </p>
+        )}
+        <button
+          className="btn btn-primary"
+          type="submit"
+          disabled={status === 'sending' || !token}
+        >
           {status === 'sending' ? '送信中…' : '送信する'}
         </button>
+        {status === 'limited' && (
+          <p className="contact-error" role="alert">
+            短時間に送信が続いたため、いったん受け付けられませんでした。しばらくしてからもう一度お試しください。
+          </p>
+        )}
         {status === 'error' && (
           <p className="contact-error" role="alert">
             送信に失敗しました。時間をおいて再度お試しいただくか、info@mirai-study.com まで直接ご連絡ください。

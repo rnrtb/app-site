@@ -194,6 +194,25 @@ Vercel がビルドするとサイトに反映されます。
 4. カスタムドメイン: `mirai-study.com`（および `www` があれば寄せる）
 5. DNS は Cloudflare で Vercel 向けレコードを設定
 
+### お問い合わせフォームの環境変数
+
+`/api/contact`（Vercel Function）が Resend でメールを送ります。Turnstile の検証と、Upstash Redis による送信回数制限（同一接続元から 10 分間に 3 回まで、slidingWindow）を行います。
+Vercel の Environment Variables（Production / Preview）に設定してください。
+
+| 名前 | 内容 | 備考 |
+| --- | --- | --- |
+| `VITE_TURNSTILE_SITE_KEY` | Turnstile の Site Key | 公開値。ビルド時に埋め込まれるため、変更後は再デプロイ |
+| `TURNSTILE_SECRET_KEY` | Turnstile の Secret Key | 秘密 |
+| `RESEND_API_KEY` | Resend の API キー | 秘密 |
+| `CONTACT_TO_EMAIL` | 受信先（`info@mirai-study.com`） | |
+| `CONTACT_FROM_EMAIL` | 送信元（Resend で認証済みドメイン） | |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis | Marketplace 連携が自動設定。`KV_REST_API_URL` / `KV_REST_API_TOKEN` でも可 |
+| `RATE_LIMIT_SECRET` | 接続元 IP を HMAC 化する秘密値 | 秘密。十分に長いランダム文字列 |
+
+- 環境変数が欠けている場合は、送信せず 500 を返します（Redis の一時障害とは別扱い）。
+- Redis に一時的に接続できない場合は、Turnstile 検証を通ったリクエストに限り回数制限だけをスキップします。
+- ローカルで API まで確認するときは `vercel dev` を使います（`npm run dev` では `/api` は動きません）。
+
 ## 旧サイトからの移行方針
 
 - **今:** 公式サイトの枠 + Works の記事運用を固める
