@@ -44,7 +44,18 @@ export function ContactPage() {
       <div className="page-block contact-page">
         <p className="page-kicker">Contact</p>
         <h1>送信しました</h1>
-        <p className="lede">お問い合わせありがとうございます。内容を確認のうえ、ご連絡します。</p>
+        <p className="lede">
+          お問い合わせありがとうございます。
+          <br />
+          内容を確認のうえ、ご入力いただいたメールアドレスへご連絡します。
+        </p>
+        <p className="lede">
+          1週間ほど経っても返信が届かない場合は、迷惑メールフォルダをご確認のうえ、
+          <a className="text-link" href="mailto:info@mirai-study.com">
+            info@mirai-study.com
+          </a>{' '}
+          まで直接ご連絡ください。
+        </p>
       </div>
     )
   }
