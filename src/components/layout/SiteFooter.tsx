@@ -1,23 +1,17 @@
+import { Link } from 'react-router-dom'
+
 export function SiteFooter() {
   const year = new Date().getFullYear()
 
   return (
     <footer className="site-footer">
       <div className="site-footer-inner">
-        <p className="site-footer-brand">Works / やったこと</p>
-        <p className="site-footer-meta">
-          {year} みらい教育システム · 著者 村田飛翔（mrtb）
-        </p>
-        <p className="site-footer-note">
-          関連:{' '}
-          <a href="https://tools.mirai-study.com/" rel="noreferrer">
-            tools
-          </a>
-          {' · '}
-          <a href="https://github.com/rnrtb" rel="noreferrer">
-            GitHub
-          </a>
-        </p>
+        <nav className="site-footer-nav" aria-label="フッター">
+          <Link to="/works">Works</Link>
+          <Link to="/about">About</Link>
+          <Link to="/contact">Contact</Link>
+        </nav>
+        <p className="site-footer-meta">{year} みらい教育システム</p>
       </div>
     </footer>
   )

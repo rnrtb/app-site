@@ -1,8 +1,8 @@
 {
-  "name": "app-works",
+  "name": "app-site",
   "private": true,
   "version": "0.1.0",
-  "description": "works.mirai-study.com - portfolio / yatakoto",
+  "description": "mirai-study.com - みらい教育システム公式サイト",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,8 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource/shippori-mincho": "^5.3.0",
-    "@fontsource/zen-kaku-gothic-new": "^5.3.0",
+    "@fontsource/zen-maru-gothic": "^5.3.0",
     "marked": "^17.0.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -23,6 +22,7 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
+    "@vercel/node": "^29.0.1",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
     "typescript": "~6.0.2",

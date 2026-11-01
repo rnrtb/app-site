@@ -1,9 +1,9 @@
-# works.mirai-study.com
+# mirai-study.com
 
-村田飛翔（mrtb）のポートフォリオ「Works / やったこと」です。  
+みらい教育システム（代表 村田 飛翔 / むらつば）の公式サイトです。  
 記事は Markdown（frontmatter 付き）で管理し、GitHub へ push すると Vercel 経由で公開する想定です。
 
-旧サイト: [むらつばのやったこと](https://mrtb.challenge-lab.com/)（WordPress）— 本リポジトリへ移行中。
+旧ポートフォリオ: [むらつばのやったこと](https://mrtb.challenge-lab.com/)（WordPress）— Works へ移行中。
 
 ## 開発環境・起動
 
@@ -23,13 +23,15 @@ npm run dev
 
 | パス | 内容 |
 | --- | --- |
-| `/` | 作品一覧（サイトの顔） |
+| `/` | トップ（事業の顔） |
+| `/about` | みらい教育システムについて |
+| `/works` | 作品一覧（Works / やったこと） |
 | `/works/:slug` | 作品詳細 |
-| `/about` | 自己紹介（著者: 村田飛翔 / mrtb） |
+| `/people/:personId` | 人物ページ（紹介 + 関わった作品） |
 | `/contact` | お問い合わせ導線 |
 
-公開 URL: `https://works.mirai-study.com`  
-（`mirai-study.com/works` 配下や `tools` 配下には置きません）
+公開 URL: `https://mirai-study.com`  
+（`academy.mirai-study.com` など塾・ツール系サブドメインとは役割を分けます）
 
 ## 記事の増やし方
 
@@ -51,8 +53,13 @@ npm run dev
 title: 作品タイトル
 date: 2025-11-16
 summary: 一覧カード用の短い説明
-tags: [ロボコン, タイマー]
-thumbnail: /images/works/my-project.svg
+categories: [ガジェット, ロボット競技]
+credits:
+  - id: mrtb
+    role: コンセプト／回路
+  - id: noa
+    role: 設計／加工
+thumbnail: /images/works/my-project.jpg
 draft: false
 ---
 
@@ -64,11 +71,59 @@ draft: false
 | `title` | ○ | タイトル |
 | `date` | ○ | `YYYY-MM-DD`（新しい順でソート） |
 | `summary` | | 一覧用の短い説明 |
-| `tags` | | タグ配列 |
+| `categories` | | カテゴリ（複数可。一覧表示・どれか選ぶと絞り込み） |
+| `credits` | | 関わった人・ユニット（詳細ページ末尾で表示） |
 | `thumbnail` | | `public/` からの絶対パス |
 | `draft` | | `true` だと一覧・詳細から除外 |
 
-`_` で始まるファイル名（例: `_draft-example.md`）も公開対象外です。
+トップのカテゴリボタン、または `/works?category=ガジェット` で絞り込めます。
+
+### クレジット（人・ユニット）
+
+`credits` の `id` は [`src/lib/people.ts`](src/lib/people.ts) に定義します。  
+表示名はメインの呼び方（`name`）に統一され、別名は `aliases` で解決します。
+
+名前を押すと `/people/{id}` へ移動します（例: `/people/mrtb`）。
+
+作品ページでは、本文の `<!-- credits -->` の位置にクレジットを差し込みます（受賞歴のあと・リンクの前が基本）。
+
+```markdown
+---
+
+受賞の一文
+
+---
+
+<!-- credits -->
+
+---
+
+- [関連リンク](https://example.com)
+```
+
+#### 人物ページを書く
+
+1. `people.ts` に `id` / `name` / `aliases` を追加
+2. 任意で `content/people/{id}.md` に紹介文を書く
+3. 任意で写真を `public/images/people/` に置き、frontmatter の `image` で指定
+
+例: `content/people/mrtb.md` → `/people/mrtb`（写真 + 紹介 + 関わった作品）
+
+```markdown
+---
+title: むらつば
+image: /images/people/mrtb.png
+---
+```
+
+| id | 表示名 | 別名 |
+| --- | --- | --- |
+| `mrtb` | むらつば（ページ見出し: 村田 飛翔） | muratsuba, 村田 飛翔 |
+| `hanachan` | はなちゃん | |
+| `noa` | のあ | |
+| `wakamesoup` | わかめすうぷ | |
+
+`_` で始まる作品ファイル名（例: `_memo.md`）は公開対象外です。
 
 ### 3. 画像の置き場所
 
@@ -94,6 +149,26 @@ thumbnail: /images/works/my-project.jpg
 ![説明](/images/works/my-project-detail.jpg)
 ```
 
+### 動画埋め込み
+
+本文に HTML を書けます。
+
+YouTube（iframe）:
+
+```html
+<div class="embed-frame">
+<iframe title="タイトル" src="https://www.youtube.com/embed/VIDEO_ID" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+</div>
+```
+
+ニコニコ（iframe。WordPress の script 埋め込みは SPA と相性が悪いので iframe を使う）:
+
+```html
+<div class="embed-frame">
+<iframe title="タイトル" src="https://embed.nicovideo.jp/watch/smXXXXXXX" allowfullscreen loading="lazy"></iframe>
+</div>
+```
+
 ### 4. 公開
 
 ```bash
@@ -113,15 +188,15 @@ Vercel がビルドするとサイトに反映されます。
 
 既存の `app-tools` などと同様の想定です。
 
-1. GitHub リポジトリ: `rnrtb/app-works`
+1. GitHub リポジトリ: `rnrtb/app-site`
 2. Vercel でリポジトリを Import（Framework Preset: Vite、出力: `dist`）
 3. `vercel.json` で SPA フォールバック済み（直接 `/works/...` にアクセスしても `index.html` を返す）
-4. カスタムドメイン: `works.mirai-study.com`
+4. カスタムドメイン: `mirai-study.com`（および `www` があれば寄せる）
 5. DNS は Cloudflare で Vercel 向けレコードを設定
 
 ## 旧サイトからの移行方針
 
-- **今:** 枠とサンプル 1〜2 本。運用（MD 追加 → push）を先に固める
+- **今:** 公式サイトの枠 + Works の記事運用を固める
 - **後で:** `mrtb.challenge-lab.com` の記事を順次 Markdown 化して `content/works/` へ移す
 - **リダイレクト:** 旧ドメイン / 旧パーマリンクからの転送は後対応（Cloudflare または旧ホスト側で設定予定）
 
@@ -129,8 +204,9 @@ Vercel がビルドするとサイトに反映されます。
 
 | リポジトリ | 公開 URL | 役割 |
 | --- | --- | --- |
-| `app-works`（本リポ） | `works.mirai-study.com` | ポートフォリオ |
+| `app-site`（本リポ） | `mirai-study.com` | 公式サイト（About / Works / Contact） |
 | `app-tools` | `tools.mirai-study.com` | ブラウザ向けツール |
+| academy 系 | `academy.mirai-study.com` | みらい教育ラボ |
 | `app-kanji` / `app-play` | 各サブドメイン | 別プロダクト |
 
 `app-tools` フッター等からのリンク追加は、本リポジトリではなく `app-tools` 側で後から行います。
